@@ -37,7 +37,7 @@
                     pmBonusExp += pmExtraBonus * (mazeLimit[mazeList[i]] + (hasSoulPlus ? soulPlus[mazeList[i]] : 0));
             }
             weekExp += raidExp + mazeExp + pmBonusExp;
-            result = parseInt(sumRequired / weekExp);
+            result = parseInt(sumRequired / weekExp) + 1;
             console.log(result);
             if (isNaN(result) || result == undefined || result == null)
                 document.getElementById('result').innerHTML = `<b>알 수 없는 오류 발생</b>`;
