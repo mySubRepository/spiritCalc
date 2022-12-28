@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ko-KR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>스피릿 계산기</title>
+    <script src="./src/mazeLimit.js"></script>
+    <script src="./src/soulPlus.js"></script>
+    <script src="./src/filament.js"></script>
+    <script src="./src/expRequired.js"></script>
+    <script src="./src/expGain.js"></script>
+    <script>
+        function Calc() {
+            let hasSoulPlus = document.getElementById("soulPlus").checked ? true : false; // 소워플러스 보유여부            
+            let lv = document.getElementById('lv').value.trim();
+            let sumRequired = -(document.getElementById('exp').value.trim());
+            let expSumRequired = 0;
+            let mazeList = checkedMaze();
+            let filamentExp = sumFilamment();
+            let pmExtraBonus = getPmExtra();
+            let weekExp = 0;
+            let mazeExp = 0, raidExp = 0, pmBonusExp = 0, result;
+
+            for (let i = lv - 1; i < expRequired.length; i++) { // 필요한 총 경험치량 계산
+                sumRequired += expRequired[i];
+            }
+            sumRequired -= filamentExp;
+            expSumRequired += sumRequired;
+            for (let i = 0; i < mazeList.length; i++) {  // 주간 경험치 계산
+                if (mazeList[i] != "sg" && mazeList[i] != "gf") // 레이드 보너스
+                    raidExp += expGain[mazeList[i]] * (mazeLimit[mazeList[i]] + (hasSoulPlus ? soulPlus[mazeList[i]] : 0));
+                else// 메이즈 보너스
+                    mazeExp += expGain[mazeList[i]] * (mazeLimit[mazeList[i]] + (hasSoulPlus ? soulPlus[mazeList[i]] : 0)) * (document.getElementById(`${mazeList[i]}` + "Num").value);
+                if (mazeList[i] == "pmHard" || mazeList[i] == "pmNormal") // 페메 보너스
+                    pmBonusExp += pmExtraBonus * (mazeLimit[mazeList[i]] + (hasSoulPlus ? soulPlus[mazeList[i]] : 0));
+            }
+            weekExp += raidExp + mazeExp + pmBonusExp;
+            result = parseInt(sumRequired / weekExp);
+            console.log(result);
+            if (isNaN(result) || result == undefined || result == null)
+                document.getElementById('result').innerHTML = `<b>알 수 없는 오류 발생</b>`;
+            else
+                document.getElementById('result').innerHTML = `<b>총 ${result}주 소요</b><br>
+                <b>총 경험치 요구량: ${expSumRequired}<b><br>
+                <b>주간 획득 경험치: ${weekExp}<b><br>
+                `;
+
+
+            console.log("레이드 경험치: " + raidExp);
+            console.log("메이즈 경험치: " + mazeExp);
+            console.log("페매 보너스 경험치: " + pmBonusExp);
+            console.log("최소 주: " + sumRequired / weekExp);
+        }
+
+        function checkedMaze() {
+            let mazeList = [];
+            document.querySelector('input[name="vs"]:checked') != undefined ? mazeList.push(document.querySelector('input[name="vs"]:checked').value) : 0;
+            document.querySelector('input[name="vsManiac"]:checked') != undefined ? mazeList.push(document.querySelector('input[name="vsManiac"]:checked').value) : 0;
+            document.querySelector('input[name="tf"]:checked') != undefined ? mazeList.push(document.querySelector('input[name="tf"]:checked').value) : 0;
+            document.querySelector('input[name="tfManiac"]:checked') != undefined ? mazeList.push(document.querySelector('input[name="tfManiac"]:checked').value) : 0;
+            document.querySelector('input[name="pm"]:checked') != undefined ? mazeList.push(document.querySelector('input[name="pm"]:checked').value) : 0;
+            document.querySelector('input[name="sg"]:checked') != undefined ? mazeList.push(document.querySelector('input[name="sg"]:checked').value) : 0;
+            document.querySelector('input[name="gf"]:checked') != undefined ? mazeList.push(document.querySelector('input[name="gf"]:checked').value) : 0;
+            return mazeList;
+        }
+
+        function sumFilamment() {
+            let sum = 0;
+            let filamentList = document.getElementsByName('filament');
+            for (let i = 0; i < filamentList.length; i++) {
+                sum += filamentList[i].value * filament[filamentList[i].id];
+            }
+            return parseInt(sum);
+        }
+
+        function getPmExtra() {
+            let pmExtraList = document.getElementsByName('pmExtra');
+            for (let i = 0; i < pmExtraList.length; i++) {
+                if (pmExtraList[i].checked)
+                    return pmExtraList[i].value;
+            }
+        }
+
+        function toggleBtn(e) {
+            let name = e.name
+            let buttonList = document.getElementsByName(name);
+            for (let i = 0; i < buttonList.length; i++) {
+                if (buttonList[i].checked == true && buttonList[i] != e)
+                    buttonList[i].checked = false;
+            }
+        }
+    </script>
+</head>
+
+<body>
+    <div style="text-align:center;">
+        <h1>소울워커 스피릿 계산기</h1>
+        <div style="text-align:center;" id="result">
+        </div>
+        <input type="button" value="계산하기" onclick="Calc()"><br><br>
+        스피릿 레벨: <input style="width: 100px;" type="number" id="lv" min="1" max="40" value="1"><br>
+        스피릿 경험치 : <input style="width: 100px;" type="number" id="exp" min="0" max="204950" value="0"><br><br>
+        <b>소워 플러스 보유:</b> <input type="checkbox" id="soulPlus"><br><br>
+    </div>
+    <div style="text-align:center;">
+        <div
+            style="display:inline-block; border:1px solid; height:512px; width:300px; padding:5px; vertical-align:top;">
+            <h2>메이즈 선택</h2>
+            브세 노말 <input onclick="toggleBtn(this)" type="checkbox" name="vs" value="vsNormal"><br>
+            브세 하드 <input onclick="toggleBtn(this)" type="checkbox" name="vs" value="vsHard" checked="checked"><br>
+            브세 매니악 <input type="checkbox" name="vsManiac" value="vsManiac" checked="checked"><br><br>
+            트페 노말 <input onclick="toggleBtn(this)" type="checkbox" name="tf" value="tfNormal"><br>
+            트페 하드 <input onclick="toggleBtn(this)" type="checkbox" name="tf" value="tfHard" checked="checked"><br>
+            트페 매니악 <input type="checkbox" name="tfManiac" value="tfManiac" checked="checked"><br><br>
+            페매 노말 <input onclick="toggleBtn(this)" type="checkbox" name="pm" value="pmNormal"><br>
+            페매 하드 <input onclick="toggleBtn(this)" type="checkbox" name="pm" value="pmHard" checked="checked"><br><br>
+            풍요의 화원 <input type="checkbox" class="maze" name="sg" value="sg" checked="checked"><br>
+            고독의 고원 <input type="checkbox" class="maze" name="gf" value="gf" checked="checked"><br>
+        </div>
+        <div
+            style="display:inline-block; border:1px solid; height:512px; width:300px; padding:5px; vertical-align:top;">
+            <h2>풍요/고원 주간 횟수</h2>
+            풍요, 고원 도는 날만큼만 적을 것<br>
+            (ex: 주말에만 돌면 풍요 2, 고원 2로)<br>
+            <br>
+            풍요: <input type="number" id="sgNum" min="0" max="7" value="7"><br>
+            고원: <input type="number" id="gfNum" min="0" max="7" value="7"><br>
+        </div>
+        <div
+            style="display:inline-block; border:1px solid; height:512px; width:300px; padding:5px; vertical-align:top;">
+            <h2>패러럴 매트로늄 추가 보상</h2>
+            패러랠 매트로늄의 최소 보상을 계산해줌.<br>카드키 사용시 판당 경험치 200, 사용 안할시 100 추가
+            <br>
+            <br>
+            카드키 X<input type="radio" name="pmExtra" value="100">
+            <br>
+            카드키 O<input type="radio" name="pmExtra" value="200" checked="checked">
+        </div>
+        <div
+            style="display:inline-block; border:1px solid; height:512px; width:300px; padding:5px; vertical-align:top;">
+            <h2>필라멘트 추가</h2>
+            페매 보상 외에도 추가로 필라멘트를 사용할 경우에만 적을 것<br>
+            <br>
+            리와인드 소스: <input type="number" name="filament" id="src" min="0"><br>
+            프로토 타입: <input type="number" name="filament" id="proto" min="0"><br>
+            싱글 에너지: <input type="number" name="filament" id="single" min="0"><br>
+            듀얼 에너지: <input type="number" name="filament" id="dual" min="0"><br>
+            쿼드 에너지: <input type="number" name="filament" id="quad" min="0"><br>
+            헥사 에너지: <input type="number" name="filament" id="hexa" min="0"><br>
+        </div>
+    </div>
+    <div style="text-align:center;">
+        <p>
+        <h2>팁</h2>
+        브세 노말/하드 = 주 20회<br>
+        브세 매니악 = 주 7회<br>
+        트페 노말/하드 = 주 9회<br>
+        트페 매니악 = 주 7회<br>
+        풍요의 화원 = 일 7회<br>
+        고독의 고원 = 일 2회<br>
+        (소워 플러스가 있다면 풍요, 고독 제외 전부 2회씩 추가. 고독은 1회만 추가)<br><br><br>
+        리와인드 소스 = 개당 10exp<br>
+        프로토타입 필라멘트 = 개당 100 exp<br>
+        싱글 에너지 필라멘트 = 개당 200 exp<br>
+        듀얼 에너지 필라멘트 = 개당 500 exp<br>
+        쿼드 에너지 필라멘트 = 개당 1000 exp<br>
+        헥사 에너지 필라멘트 = 개당 2000 exp<br>
+        </p>
+    </div>
+</body>
+
+</html>
