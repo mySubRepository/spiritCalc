@@ -8,5 +8,6 @@ let expGain = {
     pmNormal: 200,
     pmHard: 300,
     sg: 20, // also party
-    gf: 50
+    gf: 50,
+    ca: 200
 }

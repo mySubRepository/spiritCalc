@@ -8,5 +8,6 @@ let soulPlus = {
     pmNormal: 2,
     pmHard: 2,
     sg: 0, // also party
-    gf: 1
+    gf: 1,
+    ca: 1
 }
